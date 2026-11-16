@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="犹格泡泡的时光屋 —— 以追求真理，将世间一切孩子气地收藏至宝库之中。" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🫧</text></svg>"
+    />
+    <title>犹格泡泡的时光屋</title>
+    <script>
+      // 主题初始化要在首帧前执行，避免闪烁：默认跟随系统，手动选择存 localStorage
+      ;(function () {
+        var saved = localStorage.getItem('theme')
+        var dark = saved === 'dark' || (!saved && matchMedia('(prefers-color-scheme: dark)').matches)
+        if (dark) document.documentElement.classList.add('dark')
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
