@@ -7,4 +7,6 @@ export interface PostMeta {
   date: string
   tags: string[]
   year: number
+  /** 该文章现有的语言版本（zh / en） */
+  langs: ('zh' | 'en')[]
 }

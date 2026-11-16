@@ -7,6 +7,7 @@ declare module 'virtual:posts' {
 
 declare module '*.md' {
   export const slug: string
+  export const lang: 'zh' | 'en'
   export const frontmatter: {
     title?: string
     excerpt?: string

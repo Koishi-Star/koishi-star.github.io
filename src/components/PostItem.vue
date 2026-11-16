@@ -17,6 +17,9 @@ const fmt = (iso: string) => {
     <p class="post-item-excerpt">{{ post.excerpt }}</p>
     <p class="post-item-meta">
       <time>{{ fmt(post.date) }}</time>
+      <span v-if="post.langs?.includes('en')" class="lang-badge" title="English version available"
+        >EN</span
+      >
       <span v-for="t in post.tags" :key="t" class="tag"># {{ t }}</span>
     </p>
   </li>

@@ -20,6 +20,8 @@ tags:
 
 `posts/_template.md` 是模板（`_` 开头的文件不会发布），`pages/` 放独立页面（如关于页）。
 
+**英文版**：同目录放 `posts/<slug>.en.md`（同样的 slug + `.en.md` 后缀），文章页会自动出现 中/EN 切换按钮，首页列表加 EN 徽标。frontmatter 的 title/excerpt/tags 各自独立。
+
 ## 本地开发
 
 ```bash

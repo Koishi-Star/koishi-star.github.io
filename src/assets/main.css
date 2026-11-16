@@ -255,6 +255,13 @@ button {
   line-height: 1.4;
   margin: 0;
 }
+.post-meta-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
 .post-meta {
   margin: 0.6rem 0 0;
   font-size: 0.85rem;
@@ -263,6 +270,40 @@ button {
   flex-wrap: wrap;
   gap: 0.75rem;
   align-items: baseline;
+}
+
+/* ---------- 语言切换（中 / EN） ---------- */
+.lang-switch {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 0.45rem;
+  flex: none;
+}
+.lang-switch button {
+  font-size: 0.78rem;
+  line-height: 1.6;
+  padding: 0.05rem 0.8rem;
+  color: var(--muted);
+  transition: color 0.15s, background 0.15s;
+}
+.lang-switch button + button {
+  border-left: 1px solid var(--border);
+}
+.lang-switch button.active {
+  color: var(--bg);
+  background: var(--fg);
+}
+
+/* 首页列表：有英文版的文章加 EN 小徽标 */
+.lang-badge {
+  font-size: 0.66rem;
+  line-height: 1.5;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 0.3em;
+  color: var(--muted);
 }
 
 /* ---------- 文章目录（TOC，宽屏左侧栏） ---------- */

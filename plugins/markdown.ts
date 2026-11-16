@@ -98,29 +98,56 @@ export function markdownPlugin(): Plugin {
     return matter(raw).data
   }
 
+  type Lang = 'zh' | 'en'
+
+  // 文件名 → slug + 语言：<slug>.md 是默认版（中文），<slug>.en.md 是英文版
+  const parsePostFile = (f: string): { slug: string; lang: Lang } | null => {
+    if (!f.endsWith('.md') || f.startsWith('_')) return null
+    if (f.endsWith('.en.md')) return { slug: f.slice(0, -'.en.md'.length), lang: 'en' }
+    return { slug: f.slice(0, -'.md'.length), lang: 'zh' }
+  }
+
+  const buildMeta = (file: string, slug: string) => {
+    const fm = readFrontmatter(path.join(postsDir, file))
+    const date = fm.date ? new Date(fm.date as string).toISOString() : undefined
+    const tags = Array.isArray(fm.tags)
+      ? (fm.tags as string[])
+      : typeof fm.tags === 'string' && fm.tags
+        ? fm.tags.split(/[,，]/).map((t) => t.trim()).filter(Boolean)
+        : []
+    return {
+      slug,
+      title: (fm.title as string) ?? slug,
+      excerpt: (fm.excerpt as string) ?? '',
+      date: date ?? '1970-01-01T00:00:00.000Z',
+      tags,
+      year: date ? new Date(date).getFullYear() : 1970,
+    }
+  }
+
   const scanPosts = () => {
     if (!fs.existsSync(postsDir)) return []
-    return fs
-      .readdirSync(postsDir)
-      .filter((f) => f.endsWith('.md') && !f.startsWith('_'))
-      .map((f) => {
-        const slug = f.replace(/\.md$/, '')
-        const fm = readFrontmatter(path.join(postsDir, f))
-        const date = fm.date ? new Date(fm.date as string).toISOString() : undefined
-        const tags = Array.isArray(fm.tags)
-          ? (fm.tags as string[])
-          : typeof fm.tags === 'string' && fm.tags
-            ? fm.tags.split(/[,，]/).map((t) => t.trim()).filter(Boolean)
-            : []
-        return {
-          slug,
-          title: (fm.title as string) ?? slug,
-          excerpt: (fm.excerpt as string) ?? '',
-          date: date ?? '1970-01-01T00:00:00.000Z',
-          tags,
-          year: date ? new Date(date).getFullYear() : 1970,
+    // 每个 slug 聚合各语言版本；中文版字段优先作为列表元数据
+    const bySlug = new Map<string, { meta: ReturnType<typeof buildMeta>; langs: Lang[] }>()
+    for (const f of fs.readdirSync(postsDir)) {
+      const parsed = parsePostFile(f)
+      if (!parsed) continue
+      const existing = bySlug.get(parsed.slug)
+      if (existing) {
+        if (parsed.lang === 'en') existing.langs.push('en')
+        else {
+          existing.langs.unshift('zh')
+          existing.meta = buildMeta(f, parsed.slug)
         }
-      })
+      } else {
+        bySlug.set(parsed.slug, {
+          meta: buildMeta(f, parsed.slug),
+          langs: [parsed.lang],
+        })
+      }
+    }
+    return [...bySlug.values()]
+      .map(({ meta, langs }) => ({ ...meta, langs }))
       .sort((a, b) => b.date.localeCompare(a.date))
   }
 
@@ -146,7 +173,9 @@ export function markdownPlugin(): Plugin {
           const html = await render(content)
           const date = fm.date ? new Date(fm.date as string).toISOString() : undefined
           const frontmatter = { ...fm, date }
-          const slug = path.basename(id, '.md')
+          const isEn = id.endsWith('.en.md')
+          const slug = path.basename(id, isEn ? '.en.md' : '.md')
+          const lang: Lang = isEn ? 'en' : 'zh'
           // 从渲染结果提取目录（heading_open 规则已写入 id="h-N"）
           const toc: { id: string; level: number; text: string }[] = []
           for (const m of html.matchAll(/<h([1-4]) id="(h-\d+)">([\s\S]*?)<\/h\1>/g)) {
@@ -158,10 +187,11 @@ export function markdownPlugin(): Plugin {
           }
           return [
             `export const slug = ${JSON.stringify(slug)}`,
+            `export const lang = ${JSON.stringify(lang)}`,
             `export const frontmatter = ${JSON.stringify(frontmatter)}`,
             `export const html = ${JSON.stringify(html)}`,
             `export const toc = ${JSON.stringify(toc)}`,
-            `export default { slug, frontmatter, html, toc }`,
+            `export default { slug, lang, frontmatter, html, toc }`,
           ].join('\n')
         })()
       }
