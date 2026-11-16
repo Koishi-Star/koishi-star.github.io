@@ -15,4 +15,5 @@ declare module '*.md' {
     [key: string]: unknown
   }
   export const html: string
+  export const toc: { id: string; level: number; text: string }[]
 }

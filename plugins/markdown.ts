@@ -147,11 +147,21 @@ export function markdownPlugin(): Plugin {
           const date = fm.date ? new Date(fm.date as string).toISOString() : undefined
           const frontmatter = { ...fm, date }
           const slug = path.basename(id, '.md')
+          // 从渲染结果提取目录（heading_open 规则已写入 id="h-N"）
+          const toc: { id: string; level: number; text: string }[] = []
+          for (const m of html.matchAll(/<h([1-4]) id="(h-\d+)">([\s\S]*?)<\/h\1>/g)) {
+            toc.push({
+              id: m[2],
+              level: Number(m[1]),
+              text: m[3].replace(/<[^>]+>/g, '').trim(),
+            })
+          }
           return [
             `export const slug = ${JSON.stringify(slug)}`,
             `export const frontmatter = ${JSON.stringify(frontmatter)}`,
             `export const html = ${JSON.stringify(html)}`,
-            `export default { slug, frontmatter, html }`,
+            `export const toc = ${JSON.stringify(toc)}`,
+            `export default { slug, frontmatter, html, toc }`,
           ].join('\n')
         })()
       }
